@@ -43,11 +43,10 @@ describe("Unit tests", function () {
       await hre.ethers.provider.send("evm_mine", []);
 
       // We ensure that given {a, x} we return true
-      const isTrue = await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verify(
         blockhash,
         blockNumber
-      )
-      console.log("Is True", isTrue);
+      )).to.be.true
       // We ensure that given {a+1, x} we revert
       expect(await this.poe.connect(this.signers.admin).verify(
         blockhash,
