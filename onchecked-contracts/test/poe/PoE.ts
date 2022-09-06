@@ -123,11 +123,41 @@ describe("Unit tests", function () {
         signedBlockhash,
         admin.address
       )
-
-      console.log("RESPONSE", address, isValid);
       
       expect(isValid).to.be.true
       expect(address).to.eq(admin.address)
+    })
+
+    it('should be able to validate the two parties that have signed a blockhash', async function() {
+      const [alice, bob] = await ethers.getSigners();
+
+      // We obtain bH = x and bN = a where {a: x} from smart contract
+      const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+
+      // We obtain alice.signed_bH and pass it over to the
+      let message = ethers.utils.solidityPack(["string"], [blockhash]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhashByAlice = await alice.signMessage(ethers.utils.arrayify(message));
+
+      // We obtain bob.signed_aliceSignedBH and pass it over
+      message = ethers.utils.solidityPack(["string"], [signedBlockhashByAlice]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
+
+      // string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner
+      const [signer, cosigner, isValid] = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+        blockhash,
+        signedBlockhashByAlice,
+        blockNumber,
+        signedBlockhashByAlice,
+        signedBlockhashByAliceAndBob,
+        alice.address,
+        bob.address
+      )
+      
+      console.log("SIGNER", signer);
+      console.log("CO-SIGNER", cosigner);
+      expect(isValid).to.be.true
     })
   });
 });

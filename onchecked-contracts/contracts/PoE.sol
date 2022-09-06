@@ -41,6 +41,27 @@ contract PoE {
           return (_address, false);
       }
     }
+    function verifyCosignedBlockhash(string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner) public view  returns(address, address, bool) {
+      bool isValidBlock = verifyBlockhash(_blockhash, _blocknumber);
+      if (isValidBlock == false) {
+        return (_signer, _cosigner, false);
+      }
+      bytes32 messageHash = keccak256(bytes(_blockhash));
+      bytes32 message = ECDSA.toEthSignedMessageHash(messageHash);
+      address signerAddress = ECDSA.recover(message, _signature);
+      if (_signer == signerAddress) {
+          bytes32 messageSignedHash = keccak256(bytes(_signedBlockhash));
+          bytes32 signedMessage = ECDSA.toEthSignedMessageHash(messageSignedHash);
+          address cosignerAddress = ECDSA.recover(signedMessage, _cosignature);
+          if (_cosigner == cosignerAddress) {
+            return (_signer, _cosigner, true);
+          } else {
+            return (_signer, _cosigner, false);
+          }
+      } else {
+          return (_signer, _cosigner, false);
+      }
+    }
     function _toString(bytes32 arg) pure private returns (string memory) {
       return Strings.toHexString(uint256(arg), 32);
     }
