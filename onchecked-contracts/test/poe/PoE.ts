@@ -6,6 +6,15 @@ import { PoE, PoE__factory } from "../../src/types";
 
 import type { Signers } from "../types";
 import { BigNumber, utils } from "ethers";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+
+const mineBlocks = async(LIMIT = 255) => {
+  let counter = 0;
+  while(counter <= LIMIT) {
+    await hre.ethers.provider.send("evm_mine", []);
+    counter++;
+  }
+}
 
 describe("Unit tests", function () {
   before(async function () {
@@ -43,7 +52,7 @@ describe("Unit tests", function () {
       await hre.ethers.provider.send("evm_mine", []);
 
       // We ensure that given {a, x} we return true
-      expect(await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verifyBlockhash(
         blockhash,
         blockNumber
       )).to.be.true
@@ -51,7 +60,7 @@ describe("Unit tests", function () {
       await hre.ethers.provider.send("evm_mine", []);
 
       // We ensure that given {b, y} we return true
-      expect(await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verifyBlockhash(
         prevBlock.hash,
         prevBlock.number
       )).to.be.true
@@ -59,7 +68,7 @@ describe("Unit tests", function () {
       await hre.ethers.provider.send("evm_mine", []);
 
       // We ensure that given {a+1, x} we revert
-      expect(await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verifyBlockhash(
         blockhash,
         blockNumber.add(1).toString()
       )).to.be.false
@@ -70,21 +79,17 @@ describe("Unit tests", function () {
       // We obtain bH = x and bN = a where {a: x} from smart contract
       const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
       // We ensure that given {a, x} we return true
-      expect(await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verifyBlockhash(
         blockhash,
         blockNumber
       )).to.be.true
 
       
       // We mine 256 blocks
-      let counter = 0;
-      while(counter <= 254) { // Only 254 as we are already 2 blocks in.
-        await hre.ethers.provider.send("evm_mine", []);
-        counter++;
-      }
+      await mineBlocks(254); // Only 254 as we are already 2 blocks in, and want to mine the last manually
 
       // We ensure that given {a, x} we return true, as block.number - a <= 256
-      expect(await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verifyBlockhash(
         blockhash,
         blockNumber
       )).to.be.true
@@ -92,10 +97,37 @@ describe("Unit tests", function () {
       await hre.ethers.provider.send("evm_mine", []);
 
       // We ensure that given {a, x} we return false, as block.number - a > 256
-      expect(await this.poe.connect(this.signers.admin).verify(
+      expect(await this.poe.connect(this.signers.admin).verifyBlockhash(
         blockhash,
         blockNumber
       )).to.be.false
+    })
+
+    it('should return whether a signed blockhash belongs to the owner and is still valid', async function () {
+      const [admin] = await ethers.getSigners();
+      // We obtain bH = x and bN = a where {a: x} from smart contract
+      const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+
+      // We obtain signed_bH and pass it over to the
+      let message = ethers.utils.solidityPack(["string"], [blockhash]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhash = await admin.signMessage(ethers.utils.arrayify(message));
+      //const signedBlockhash = await admin.signMessage(blockhash);
+      console.log("Signed bH (JS)", signedBlockhash);
+      console.log("Keccak256 bH (JS)", keccak256(toUtf8Bytes(blockhash)));
+      console.log("Address (JS)", admin.address);
+
+      const [address, isValid] = await this.poe.connect(this.signers.admin).verifySignedBlockhash(
+        blockhash,
+        blockNumber,
+        signedBlockhash,
+        admin.address
+      )
+
+      console.log("RESPONSE", address, isValid);
+      
+      expect(isValid).to.be.true
+      expect(address).to.eq(admin.address)
     })
   });
 });
