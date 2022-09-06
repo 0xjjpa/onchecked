@@ -35,9 +35,9 @@ describe("Unit tests", function () {
       // We obtain the last block directly from the node by using a RPC call
       const latestBlock = await hre.ethers.provider.getBlock("latest");
       console.log("(JS) [Last Block] Blockhash from Node + RPC Call", latestBlock.hash, latestBlock.number);
-
-      const prevBlock = await hre.ethers.provider.getBlock(latestBlock.number - 1);
-      console.log("(JS) [Prev Block] Blockhash from Node + RPC Call", prevBlock.hash, prevBlock.number);
+      // We obtain bH = y and bN = b where {b: y} from smart contract
+      const prevBlock = await hre.ethers.provider.getBlock(latestBlock.number - 2);
+      console.log("(JS) [ n-2 Block] Blockhash from Node + RPC Call", prevBlock.hash, prevBlock.number);
 
       // We mine the next block such as {a+1: y}
       await hre.ethers.provider.send("evm_mine", []);
@@ -47,6 +47,17 @@ describe("Unit tests", function () {
         blockhash,
         blockNumber
       )).to.be.true
+
+      await hre.ethers.provider.send("evm_mine", []);
+
+      // We ensure that given {b, y} we return true
+      expect(await this.poe.connect(this.signers.admin).verify(
+        prevBlock.hash,
+        prevBlock.number
+      )).to.be.true
+
+      await hre.ethers.provider.send("evm_mine", []);
+
       // We ensure that given {a+1, x} we revert
       expect(await this.poe.connect(this.signers.admin).verify(
         blockhash,
@@ -54,5 +65,37 @@ describe("Unit tests", function () {
       )).to.be.false
 
     });
+
+    it('should return false if more than 256 blocks have passed the current block number', async function() {
+      // We obtain bH = x and bN = a where {a: x} from smart contract
+      const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+      // We ensure that given {a, x} we return true
+      expect(await this.poe.connect(this.signers.admin).verify(
+        blockhash,
+        blockNumber
+      )).to.be.true
+
+      
+      // We mine 256 blocks
+      let counter = 0;
+      while(counter <= 254) { // Only 254 as we are already 2 blocks in.
+        await hre.ethers.provider.send("evm_mine", []);
+        counter++;
+      }
+
+      // We ensure that given {a, x} we return true, as block.number - a <= 256
+      expect(await this.poe.connect(this.signers.admin).verify(
+        blockhash,
+        blockNumber
+      )).to.be.true
+
+      await hre.ethers.provider.send("evm_mine", []);
+
+      // We ensure that given {a, x} we return false, as block.number - a > 256
+      expect(await this.poe.connect(this.signers.admin).verify(
+        blockhash,
+        blockNumber
+      )).to.be.false
+    })
   });
 });
