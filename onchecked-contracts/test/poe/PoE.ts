@@ -117,7 +117,7 @@ describe("Unit tests", function () {
       console.log("Keccak256 bH (JS)", keccak256(toUtf8Bytes(blockhash)));
       console.log("Address (JS)", admin.address);
 
-      const [address, isValid] = await this.poe.connect(this.signers.admin).verifySignedBlockhash(
+      const isValid = await this.poe.connect(this.signers.admin).verifySignedBlockhash(
         blockhash,
         blockNumber,
         signedBlockhash,
@@ -125,7 +125,6 @@ describe("Unit tests", function () {
       )
       
       expect(isValid).to.be.true
-      expect(address).to.eq(admin.address)
     })
 
     it('should be able to validate the two parties that have signed a blockhash', async function() {
@@ -145,7 +144,7 @@ describe("Unit tests", function () {
       const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
 
       // string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner
-      const [signer, cosigner, isValid] = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+      const isValid = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
         blockhash,
         signedBlockhashByAlice,
         blockNumber,
@@ -155,8 +154,7 @@ describe("Unit tests", function () {
         bob.address
       )
       
-      console.log("SIGNER", signer);
-      console.log("CO-SIGNER", cosigner);
+      console.log("IS VALid", isValid);
       expect(isValid).to.be.true
     })
   });
