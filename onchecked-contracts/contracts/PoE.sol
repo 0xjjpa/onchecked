@@ -12,7 +12,7 @@ contract PoE {
       string _blockhash;
       uint256 _blocknumber;
     }
-    mapping(address => Proof) signatures;
+    mapping(address => Proof) private signatures;
     function verifyBlockhash(string memory _blockhash, uint256 _blocknumber) public view returns (bool) {
       console.log("* Block Number:", block.number);
       console.log("* Blockhash:", _toString(blockhash(block.number - 1)));
@@ -47,7 +47,7 @@ contract PoE {
       console.log("Is Valid?", isValidBlock);
       return verifySignature(_blockhash, _signature, _address);      
     }
-    function verifyCosignedBlockhash(string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner) public view returns(bool) {
+    function verifyCosignedBlockhash(string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner) public returns(bool) {
       bool isValidBlock = verifyBlockhash(_blockhash, _blocknumber);
       if (isValidBlock == false) {
         return false;
@@ -58,7 +58,7 @@ contract PoE {
       if (isSigner) {
           (isCosigner) = verifySignature(_signedBlockhash, _cosignature, _cosigner);
           if (isCosigner) {
-            // _addSignature(_cosigner, _blockhash, _blocknumber);
+            _addSignature(_cosigner, _blockhash, _blocknumber);
             // bytes32 key = keccak256(abi.encodePacked(cosigner, _blockhash, _blocknumber));
             // signatures[key] = signer;
             return true;
@@ -68,6 +68,9 @@ contract PoE {
       } else {
           return false;
       }
+    }
+    function getSignature(address _address) public view returns (Proof memory) {
+      return signatures[_address];
     }
     function _addSignature(address _address, string memory _blockhash, uint256 _blocknumber) private {
       Proof memory _proof = Proof(_blockhash, _blocknumber);

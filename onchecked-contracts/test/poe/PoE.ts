@@ -5,7 +5,7 @@ import { expect } from "chai";
 import { PoE, PoE__factory } from "../../src/types";
 
 import type { Signers } from "../types";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, providers, utils } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 
 const mineBlocks = async(LIMIT = 255) => {
@@ -144,7 +144,7 @@ describe("Unit tests", function () {
       const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
 
       // string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner
-      const isValid = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+      const tx = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
         blockhash,
         signedBlockhashByAlice,
         blockNumber,
@@ -152,10 +152,14 @@ describe("Unit tests", function () {
         signedBlockhashByAliceAndBob,
         alice.address,
         bob.address
-      )
-      
-      console.log("IS VALid", isValid);
-      expect(isValid).to.be.true
+      );
+
+      await ethers.provider.waitForTransaction(tx.hash);
+
+      // Expect that we stored the proof inside the smart contract to check later
+      const proof = await this.poe.getSignature(bob.address);
+      expect(proof._blockhash).to.eq(blockhash);
+      expect(proof._blocknumber).to.eq(blockNumber);
     })
   });
 });
