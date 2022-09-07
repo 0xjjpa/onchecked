@@ -54,30 +54,26 @@ contract PoE {
       if (isValidBlock == false) {
         return false;
       }
-      bool isSigner;
-      bool isCosigner;
-      (isSigner) = verifySignature(_blockhash, _signature, _signer);
-      if (isSigner) {
-          (isCosigner) = verifySignature(_signedBlockhash, _cosignature, _cosigner);
-          if (isCosigner) {
-            Proof memory attestedProof = getSignature(_cosigner);
-            if (attestedProof._blocknumber != 0) { // Does exist in storage
-              if(verifyBlockhash(attestedProof._blockhash, attestedProof._blocknumber)) { // PoE has passed within < 256 blocks
-                emit Attested(_signer, _cosigner, _blockhash, attestedProof._blockhash, _blocknumber, attestedProof._blocknumber);
-              } else { // PoE has expired
-                //@TODO: Delete existing proof
-                return false;
-              }
-            } else { // Does not exist in storage
-              _addSignature(_cosigner, _blockhash, _blocknumber);
-              emit Witnessed(_cosigner, _blockhash, _blocknumber);
+      if (verifySignature(_blockhash, _signature, _signer)) {
+        if (verifySignature(_signedBlockhash, _cosignature, _cosigner)) {
+          Proof memory attestedProof = getSignature(_cosigner);
+          if (attestedProof._blocknumber != 0) { // Does exist in storage
+            if(verifyBlockhash(attestedProof._blockhash, attestedProof._blocknumber)) { // PoE has passed within < 256 blocks
+              emit Attested(_signer, _cosigner, _blockhash, attestedProof._blockhash, _blocknumber, attestedProof._blocknumber);
+            } else { // PoE has expired
+              //@TODO: Delete existing proof
+              return false;
             }
-            return true;
-          } else {
-            return false;
+          } else { // Does not exist in storage
+            _addSignature(_cosigner, _blockhash, _blocknumber);
+            emit Witnessed(_cosigner, _blockhash, _blocknumber);
           }
-      } else {
+          return true;
+        } else {
           return false;
+        }
+      } else {
+        return false;
       }
     }
     function getSignature(address _address) public view returns (Proof memory) {
