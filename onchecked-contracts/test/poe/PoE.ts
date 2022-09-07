@@ -215,5 +215,86 @@ describe("Unit tests", function () {
       expect(proof._blockhash).to.eq('');
       expect(proof._blocknumber).to.eq(0);
     })
+
+    it('should emit an attestation event when two signatures have been confirmed within <256 blocks', async function() {
+      const [alice, bob] = await ethers.getSigners();
+
+      // We obtain bH = x and bN = a where {a: x} from smart contract
+      const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+
+      // We obtain alice.signed_bH and pass it over to the
+      let message = ethers.utils.solidityPack(["string"], [blockhash]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhashByAlice = await alice.signMessage(ethers.utils.arrayify(message));
+
+      // We obtain bob.signed_aliceSignedBH and pass it over
+      message = ethers.utils.solidityPack(["string"], [signedBlockhashByAlice]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
+
+      const tx = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+        blockhash,
+        signedBlockhashByAlice,
+        blockNumber,
+        signedBlockhashByAlice,
+        signedBlockhashByAliceAndBob,
+        alice.address,
+        bob.address
+      );
+
+      await ethers.provider.waitForTransaction(tx.hash);
+
+      const filter = this.poe.filters.Witnessed();
+      const events = await this.poe.queryFilter(filter);
+
+      // Expect that we have emited the ”Witnessed” event
+      const [event] = events;
+      const { cosigner, blockhash: bh, blocknumber } = event.args;
+      expect(cosigner).to.eq(bob.address);
+      expect(blockhash).to.eq(bh);
+      expect(blocknumber).to.eq(blockNumber);
+
+      // Expect that we stored the proof inside the smart contract to check later
+      const proof = await this.poe.getSignature(bob.address);
+      expect(proof._blockhash).to.eq(blockhash);
+      expect(proof._blocknumber).to.eq(blockNumber);
+
+      // We mine 25 blocks
+      await mineBlocks(25);
+
+      // We obtain bH = x and bN = a where {a: x} from smart contract
+      const [blockhash2, blockNumber2]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+
+      // We obtain bob.signed_bH and pass it over to the
+      let message2 = ethers.utils.solidityPack(["string"], [blockhash2]);
+      message2 = ethers.utils.solidityKeccak256(["bytes"], [message2]);
+      const signedBlockhashByBob = await bob.signMessage(ethers.utils.arrayify(message2));
+
+      // We obtain alice.signed_aliceSignedBH and pass it over
+      message2 = ethers.utils.solidityPack(["string"], [signedBlockhashByBob]);
+      message2 = ethers.utils.solidityKeccak256(["bytes"], [message2]);
+      const signedBlockhashByBobAndAlice = await alice.signMessage(ethers.utils.arrayify(message2));
+
+      const tx2 = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+        blockhash2,
+        signedBlockhashByBob,
+        blockNumber2,
+        signedBlockhashByBob,
+        signedBlockhashByBobAndAlice,
+        bob.address,
+        alice.address
+      );
+
+      await ethers.provider.waitForTransaction(tx2.hash);
+
+      const filter2 = this.poe.filters.Attested();
+      const events2 = await this.poe.queryFilter(filter2);
+
+      // Expect that we have emited the ”Attested” event
+      const [event2] = events2;
+      expect(event2).to.not.be.undefined
+    })
+
+
   });
 });

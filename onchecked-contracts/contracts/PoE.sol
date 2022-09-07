@@ -52,22 +52,29 @@ contract PoE {
     function verifyCosignedBlockhash(string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner) public returns(bool) {
       bool isValidBlock = verifyBlockhash(_blockhash, _blocknumber);
       if (isValidBlock == false) {
+        console.log("[vcbh] Block given is not valid.");
         return false;
       }
       if (verifySignature(_blockhash, _signature, _signer)) {
+        console.log("[vcbh] Signer signature is valid.");
         if (verifySignature(_signedBlockhash, _cosignature, _cosigner)) {
-          Proof memory attestedProof = getSignature(_cosigner);
+          console.log("[vcbh] Cosigner signature is valid.");
+          Proof memory attestedProof = getSignature(_signer);
           if (attestedProof._blocknumber != 0) { // Does exist in storage
+            console.log("[vcbh] Proof for signer exists already!");
             // Proof-of-Existence has passed within < 256 blocks
             if(verifyBlockhash(attestedProof._blockhash, attestedProof._blocknumber)) {
+              console.log("[vcbh] Verifying blockhash for stored proof successful.");
               emit Attested(_signer, _cosigner, _blockhash, attestedProof._blockhash, _blocknumber, attestedProof._blocknumber);
               return true;
             // Proof-of-Existence has failed / expired
             } else {
+              console.log("[vcbh] Verifying blockhash for stored proof has failed.");
               //@TODO: Delete existing proof i.e delete signatures[_cosigner];
               return true;
             }
           } else { // Does not exist in storage
+            console.log("[vcbh] Proof for cosigner does not exist, storing...");
             _addSignature(_cosigner, _blockhash, _blocknumber);
             emit Witnessed(_cosigner, _blockhash, _blocknumber);
             return true;
