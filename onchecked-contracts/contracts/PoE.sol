@@ -12,6 +12,7 @@ contract PoE {
       string _blockhash;
       uint256 _blocknumber;
     }
+    event Attested(address indexed cosigner, string blockhash, uint256 indexed blocknumber);
     mapping(address => Proof) private signatures;
     function verifyBlockhash(string memory _blockhash, uint256 _blocknumber) public view returns (bool) {
       console.log("* Block Number:", block.number);
@@ -59,9 +60,10 @@ contract PoE {
           (isCosigner) = verifySignature(_signedBlockhash, _cosignature, _cosigner);
           if (isCosigner) {
             _addSignature(_cosigner, _blockhash, _blocknumber);
+            emit Attested(_cosigner, _blockhash, _blocknumber);
             // bytes32 key = keccak256(abi.encodePacked(cosigner, _blockhash, _blocknumber));
             // signatures[key] = signer;
-            return true;
+            return false;
           } else {
             return false;
           }

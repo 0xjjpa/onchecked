@@ -155,6 +155,16 @@ describe("Unit tests", function () {
       );
 
       await ethers.provider.waitForTransaction(tx.hash);
+      
+      const filter = this.poe.filters.Attested();
+      const events = await this.poe.queryFilter(filter);
+
+      // Expect that we have emited the “Attested” event
+      const [event] = events;
+      const { cosigner, blockhash: bh, blocknumber } = event.args;
+      expect(cosigner).to.eq(bob.address);
+      expect(blockhash).to.eq(bh);
+      expect(blocknumber).to.eq(blockNumber);
 
       // Expect that we stored the proof inside the smart contract to check later
       const proof = await this.poe.getSignature(bob.address);
@@ -162,4 +172,33 @@ describe("Unit tests", function () {
       expect(proof._blocknumber).to.eq(blockNumber);
     })
   });
+
+  // it('should fail to validate a two-parties signature if >256 blocks have passed', async function() {
+  //     const [alice, bob] = await ethers.getSigners();
+
+  //     // We obtain bH = x and bN = a where {a: x} from smart contract
+  //     const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+
+  //     // We obtain alice.signed_bH and pass it over to the
+  //     let message = ethers.utils.solidityPack(["string"], [blockhash]);
+  //     message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+  //     const signedBlockhashByAlice = await alice.signMessage(ethers.utils.arrayify(message));
+
+  //     // We obtain bob.signed_aliceSignedBH and pass it over
+  //     message = ethers.utils.solidityPack(["string"], [signedBlockhashByAlice]);
+  //     message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+  //     const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
+
+  //     const tx = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+  //       blockhash,
+  //       signedBlockhashByAlice,
+  //       blockNumber,
+  //       signedBlockhashByAlice,
+  //       signedBlockhashByAliceAndBob,
+  //       alice.address,
+  //       bob.address
+  //     );
+
+  //     await ethers.provider.waitForTransaction(tx.hash);
+  // })
 });
