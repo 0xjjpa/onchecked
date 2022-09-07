@@ -17,22 +17,14 @@ contract PoE {
       console.log("Eq?", _equal(_toString(blockhash(_blocknumber)), _blockhash));
       return _equal(_toString(blockhash(_blocknumber)), _blockhash);
     }
-    function verifySignedBlockhash(string memory _blockhash, uint256 _blocknumber, bytes memory _signature, address _address) public view  returns(address, bool) {
-      //Ensure that given blockhash is within the 256 limit
-      bool isValidBlock = verifyBlockhash(_blockhash, _blocknumber);
-      if (isValidBlock == false) {
-        return (_address, false);
-      }
-      console.log("Is Valid?", isValidBlock);
-
+    function verifySignature(string memory _message, bytes memory _signature, address _address) public view returns (address, bool) {
       // Hash the plain text message
-      bytes32 messageHash = keccak256(bytes(_blockhash));
+      bytes32 messageHash = keccak256(bytes(_message));
       console.log("keccak256 bH:", _toString(messageHash));
       console.log("Address", _address);
       bytes32 message = ECDSA.toEthSignedMessageHash(messageHash);
       address signeraddress = ECDSA.recover(message, _signature);
       console.log("signer", signeraddress);
-              
       if (_address == signeraddress) {
           //The message is authentic
           return (_address, true);
@@ -41,19 +33,28 @@ contract PoE {
           return (_address, false);
       }
     }
+    function verifySignedBlockhash(string memory _blockhash, uint256 _blocknumber, bytes memory _signature, address _address) public view  returns(address, bool) {
+      //Ensure that given blockhash is within the 256 limit
+      bool isValidBlock = verifyBlockhash(_blockhash, _blocknumber);
+      if (isValidBlock == false) {
+        return (_address, false);
+      }
+      console.log("Is Valid?", isValidBlock);
+      return verifySignature(_blockhash, _signature, _address);      
+    }
     function verifyCosignedBlockhash(string memory _blockhash, string memory _signedBlockhash, uint256 _blocknumber, bytes memory _signature, bytes memory _cosignature, address _signer, address _cosigner) public view  returns(address, address, bool) {
       bool isValidBlock = verifyBlockhash(_blockhash, _blocknumber);
       if (isValidBlock == false) {
         return (_signer, _cosigner, false);
       }
-      bytes32 messageHash = keccak256(bytes(_blockhash));
-      bytes32 message = ECDSA.toEthSignedMessageHash(messageHash);
-      address signerAddress = ECDSA.recover(message, _signature);
-      if (_signer == signerAddress) {
-          bytes32 messageSignedHash = keccak256(bytes(_signedBlockhash));
-          bytes32 signedMessage = ECDSA.toEthSignedMessageHash(messageSignedHash);
-          address cosignerAddress = ECDSA.recover(signedMessage, _cosignature);
-          if (_cosigner == cosignerAddress) {
+      address signer;
+      bool isSigner;
+      address cosigner;
+      bool isCosigner;
+      (signer, isSigner) = verifySignature(_blockhash, _signature, _signer);
+      if (_signer == signer && isSigner) {
+          (cosigner, isCosigner) = verifySignature(_signedBlockhash, _cosignature, _cosigner);
+          if (_cosigner == cosigner && isCosigner) {
             return (_signer, _cosigner, true);
           } else {
             return (_signer, _cosigner, false);
