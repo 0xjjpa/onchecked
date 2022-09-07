@@ -58,24 +58,30 @@ contract PoE {
         if (verifySignature(_signedBlockhash, _cosignature, _cosigner)) {
           Proof memory attestedProof = getSignature(_cosigner);
           if (attestedProof._blocknumber != 0) { // Does exist in storage
-            if(verifyBlockhash(attestedProof._blockhash, attestedProof._blocknumber)) { // PoE has passed within < 256 blocks
+            // Proof-of-Existence has passed within < 256 blocks
+            if(verifyBlockhash(attestedProof._blockhash, attestedProof._blocknumber)) {
               emit Attested(_signer, _cosigner, _blockhash, attestedProof._blockhash, _blocknumber, attestedProof._blocknumber);
-            } else { // PoE has expired
-              //@TODO: Delete existing proof
-              return false;
+              return true;
+            // Proof-of-Existence has failed / expired
+            } else {
+              //@TODO: Delete existing proof i.e delete signatures[_cosigner];
+              return true;
             }
           } else { // Does not exist in storage
             _addSignature(_cosigner, _blockhash, _blocknumber);
             emit Witnessed(_cosigner, _blockhash, _blocknumber);
+            return true;
           }
-          return true;
         } else {
+          //@TODO: Emit Invalid signature (_cosigner, _signedblockhash, _cosignature)
           return false;
         }
       } else {
+        //@TODO: Emit Invalid signature (_signer, _blockhash, _signature)
         return false;
       }
     }
+    //@TODO: Add clean method where an outdated proof is removed from storage.
     function getSignature(address _address) public view returns (Proof memory) {
       return signatures[_address];
     }
