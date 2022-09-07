@@ -8,9 +8,9 @@ import type { Signers } from "../types";
 import { BigNumber, providers, utils } from "ethers";
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 
-const mineBlocks = async(LIMIT = 255) => {
+const mineBlocks = async (LIMIT = 255) => {
   let counter = 0;
-  while(counter <= LIMIT) {
+  while (counter <= LIMIT) {
     await hre.ethers.provider.send("evm_mine", []);
     counter++;
   }
@@ -75,7 +75,7 @@ describe("Unit tests", function () {
 
     });
 
-    it('should return false if more than 256 blocks have passed the current block number', async function() {
+    it('should return false if more than 256 blocks have passed the current block number', async function () {
       // We obtain bH = x and bN = a where {a: x} from smart contract
       const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
       // We ensure that given {a, x} we return true
@@ -84,7 +84,7 @@ describe("Unit tests", function () {
         blockNumber
       )).to.be.true
 
-      
+
       // We mine 256 blocks
       await mineBlocks(254); // Only 254 as we are already 2 blocks in, and want to mine the last manually
 
@@ -123,11 +123,11 @@ describe("Unit tests", function () {
         signedBlockhash,
         admin.address
       )
-      
+
       expect(isValid).to.be.true
     })
 
-    it('should be able to validate the two parties that have signed a blockhash', async function() {
+    it('should be able to validate the two parties that have signed a blockhash', async function () {
       const [alice, bob] = await ethers.getSigners();
 
       // We obtain bH = x and bN = a where {a: x} from smart contract
@@ -155,7 +155,7 @@ describe("Unit tests", function () {
       );
 
       await ethers.provider.waitForTransaction(tx.hash);
-      
+
       const filter = this.poe.filters.Attested();
       const events = await this.poe.queryFilter(filter);
 
@@ -171,34 +171,49 @@ describe("Unit tests", function () {
       expect(proof._blockhash).to.eq(blockhash);
       expect(proof._blocknumber).to.eq(blockNumber);
     })
+
+    it('should fail to validate a two-parties signature if >256 blocks have passed', async function () {
+      const [alice, bob] = await ethers.getSigners();
+
+      // We obtain bH = x and bN = a where {a: x} from smart contract
+      const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
+
+      // We mine 254 blocks
+      await mineBlocks(254);
+
+      // We obtain alice.signed_bH and pass it over to the
+      let message = ethers.utils.solidityPack(["string"], [blockhash]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhashByAlice = await alice.signMessage(ethers.utils.arrayify(message));
+
+      // We obtain bob.signed_aliceSignedBH and pass it over
+      message = ethers.utils.solidityPack(["string"], [signedBlockhashByAlice]);
+      message = ethers.utils.solidityKeccak256(["bytes"], [message]);
+      const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
+
+      const tx = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
+        blockhash,
+        signedBlockhashByAlice,
+        blockNumber,
+        signedBlockhashByAlice,
+        signedBlockhashByAliceAndBob,
+        alice.address,
+        bob.address
+      );
+
+      await ethers.provider.waitForTransaction(tx.hash);
+
+      const filter = this.poe.filters.Attested();
+      const events = await this.poe.queryFilter(filter);
+
+      // Expect that we have NOT emited the “Attested” event
+      const [event] = events;
+      expect(event).to.be.undefined;
+
+      // Expect that there's no the proof stored inside the smart contract due to >256 blocks mined since bH
+      const proof = await this.poe.getSignature(bob.address);
+      expect(proof._blockhash).to.eq('');
+      expect(proof._blocknumber).to.eq(0);
+    })
   });
-
-  // it('should fail to validate a two-parties signature if >256 blocks have passed', async function() {
-  //     const [alice, bob] = await ethers.getSigners();
-
-  //     // We obtain bH = x and bN = a where {a: x} from smart contract
-  //     const [blockhash, blockNumber]: [string, BigNumber] = await this.poe.connect(this.signers.admin).echo();
-
-  //     // We obtain alice.signed_bH and pass it over to the
-  //     let message = ethers.utils.solidityPack(["string"], [blockhash]);
-  //     message = ethers.utils.solidityKeccak256(["bytes"], [message]);
-  //     const signedBlockhashByAlice = await alice.signMessage(ethers.utils.arrayify(message));
-
-  //     // We obtain bob.signed_aliceSignedBH and pass it over
-  //     message = ethers.utils.solidityPack(["string"], [signedBlockhashByAlice]);
-  //     message = ethers.utils.solidityKeccak256(["bytes"], [message]);
-  //     const signedBlockhashByAliceAndBob = await bob.signMessage(ethers.utils.arrayify(message));
-
-  //     const tx = await this.poe.connect(this.signers.admin).verifyCosignedBlockhash(
-  //       blockhash,
-  //       signedBlockhashByAlice,
-  //       blockNumber,
-  //       signedBlockhashByAlice,
-  //       signedBlockhashByAliceAndBob,
-  //       alice.address,
-  //       bob.address
-  //     );
-
-  //     await ethers.provider.waitForTransaction(tx.hash);
-  // })
 });
