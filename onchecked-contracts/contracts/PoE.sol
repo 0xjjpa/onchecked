@@ -12,7 +12,8 @@ contract PoE {
       string _blockhash;
       uint256 _blocknumber;
     }
-    event Attested(address indexed cosigner, string blockhash, uint256 indexed blocknumber);
+    event Witnessed(address indexed cosigner, string blockhash, uint256 blocknumber);
+    event Attested(address indexed signer, address indexed cosigner, string blockhash, string signedblockhash, uint256 blocknumber, uint256 signedblocknumber);
     mapping(address => Proof) private signatures;
     function verifyBlockhash(string memory _blockhash, uint256 _blocknumber) public view returns (bool) {
       console.log("* Block Number:", block.number);
@@ -59,11 +60,19 @@ contract PoE {
       if (isSigner) {
           (isCosigner) = verifySignature(_signedBlockhash, _cosignature, _cosigner);
           if (isCosigner) {
-            _addSignature(_cosigner, _blockhash, _blocknumber);
-            emit Attested(_cosigner, _blockhash, _blocknumber);
-            // bytes32 key = keccak256(abi.encodePacked(cosigner, _blockhash, _blocknumber));
-            // signatures[key] = signer;
-            return false;
+            Proof memory attestedProof = getSignature(_cosigner);
+            if (attestedProof._blocknumber != 0) { // Does exist in storage
+              if(verifyBlockhash(attestedProof._blockhash, attestedProof._blocknumber)) { // PoE has passed within < 256 blocks
+                emit Attested(_signer, _cosigner, _blockhash, attestedProof._blockhash, _blocknumber, attestedProof._blocknumber);
+              } else { // PoE has expired
+                //@TODO: Delete existing proof
+                return false;
+              }
+            } else { // Does not exist in storage
+              _addSignature(_cosigner, _blockhash, _blocknumber);
+              emit Witnessed(_cosigner, _blockhash, _blocknumber);
+            }
+            return true;
           } else {
             return false;
           }

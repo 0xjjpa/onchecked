@@ -156,10 +156,10 @@ describe("Unit tests", function () {
 
       await ethers.provider.waitForTransaction(tx.hash);
 
-      const filter = this.poe.filters.Attested();
+      const filter = this.poe.filters.Witnessed();
       const events = await this.poe.queryFilter(filter);
 
-      // Expect that we have emited the “Attested” event
+      // Expect that we have emited the ”Witnessed” event
       const [event] = events;
       const { cosigner, blockhash: bh, blocknumber } = event.args;
       expect(cosigner).to.eq(bob.address);
@@ -203,10 +203,10 @@ describe("Unit tests", function () {
 
       await ethers.provider.waitForTransaction(tx.hash);
 
-      const filter = this.poe.filters.Attested();
+      const filter = this.poe.filters.Witnessed();
       const events = await this.poe.queryFilter(filter);
 
-      // Expect that we have NOT emited the “Attested” event
+      // Expect that we have NOT emited the “Witnessed” event
       const [event] = events;
       expect(event).to.be.undefined;
 
