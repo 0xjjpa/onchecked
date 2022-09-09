@@ -1,11 +1,11 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import type { NextPage } from "next";
+import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 import styles from "../styles/Home.module.css";
 
-const Home: NextPage = () => {
+const Scan: NextPage = () => {
   const { address, isConnected } = useAccount();
   return (
     <div className={styles.container}>
@@ -24,7 +24,7 @@ const Home: NextPage = () => {
         <h1 className={styles.title}>Onchecked</h1>
 
         <Image
-          src="/images/onchecked.png"
+          src="/images/onchecked-scan.png"
           width="264px"
           height="283px"
           alt="Two individuals looking at their phones"
@@ -69,4 +69,4 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+export default Scan;

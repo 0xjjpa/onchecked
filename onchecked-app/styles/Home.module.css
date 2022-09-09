@@ -48,6 +48,7 @@
 .title,
 .description {
   text-align: center;
+  max-width: 50vh;
 }
 
 .description {
