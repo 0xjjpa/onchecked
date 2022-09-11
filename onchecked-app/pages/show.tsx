@@ -1,8 +1,10 @@
+import { Button } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useAccount } from "wagmi";
+import { Block, SignBlock } from "../components/SignBlock";
 import styles from "../styles/Home.module.css";
 
 const Show: NextPage = () => {
@@ -31,29 +33,14 @@ const Show: NextPage = () => {
         />
 
         <p className={styles.description}>
-          Generate a proof-of-presence between you and other web3 frend by
-          cosigning blocks in a given timeframe.
+          <b>Sign and show</b> <br />
+          We’ll grab the latest blockhash from the current network and prompt
+          you to sign it with your wallet.
         </p>
 
-        {isConnected && (
-          <div className={styles.grid}>
-            <a href="/show" className={styles.card}>
-              <h2>Sign and show proof &rarr;</h2>
-              <p>
-                Use your web3 wallet to sign a given blockhash to place yourself
-                in a given time.
-              </p>
-            </a>
-
-            <a href="/scan" className={styles.card}>
-              <h2>Scan and cosign proof &rarr;</h2>
-              <p>
-                Scan a signed payload and cosign it with your web3 wallet to
-                create an attestation.
-              </p>
-            </a>
-          </div>
-        )}
+        <p className={styles.block}>
+          <SignBlock />
+        </p>
       </main>
 
       <footer className={styles.footer}>

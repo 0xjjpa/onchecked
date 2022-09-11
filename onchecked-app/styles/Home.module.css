@@ -57,6 +57,10 @@
   font-size: 1.5rem;
 }
 
+.block {
+  margin: 0 0 1rem;
+}
+
 .grid {
   display: flex;
   align-items: center;
