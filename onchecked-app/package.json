@@ -16,12 +16,14 @@
     "ethers": "^5.0.0",
     "framer-motion": "^7.3.2",
     "next": "^12.1.6",
+    "qrcode-svg": "^1.1.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "wagmi": "^0.6.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.35",
+    "@types/qrcode-svg": "^1.1.1",
     "@types/react": "^18.0.9",
     "eslint": "^8.15.0",
     "eslint-config-next": "^12.1.6",

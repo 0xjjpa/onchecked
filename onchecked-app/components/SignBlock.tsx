@@ -11,22 +11,18 @@ import {
   ONCHECKED_SIGN_TYPES,
 } from "../constants/sign";
 
-export const SignButton = ({
-  blocknumber,
-  blockhash,
+export const SignBlock = ({
+  setSignature,
 }: {
-  blocknumber: number;
-  blockhash: string;
-}) => {};
-
-export const SignBlock = () => {
+  setSignature: (signature: string) => void;
+}) => {
   const { isConnected } = useAccount();
   const provider = useProvider();
   const { data, isError, isLoading } = useBlockNumber({
     watch: true,
   });
   const {
-    data: signedData,
+    isLoading: isLoadingSigning,
     signTypedDataAsync,
   } = useSignTypedData();
 
@@ -42,12 +38,12 @@ export const SignBlock = () => {
       blockhash,
       blocknumber: blocknumber || 0,
     };
-    const data = await signTypedDataAsync({
+    const signature = await signTypedDataAsync({
       domain: ONCHECKED_SIGN_DOMAIN,
       types: ONCHECKED_SIGN_TYPES,
       value: payload,
     });
-    console.log("Data", data);
+    setSignature(signature);
   };
 
   if (isLoading) return <Code>Fetching block number…</Code>;
@@ -58,7 +54,14 @@ export const SignBlock = () => {
         <Code>Block number: {data}</Code>
       </Box>
       <Box>
-        {isConnected && <Button onClick={() => signPayload(data)}>Sign</Button>}
+        {isConnected && (
+          <Button
+            isLoading={isLoadingSigning}
+            onClick={() => signPayload(data)}
+          >
+            Sign
+          </Button>
+        )}
       </Box>
     </SimpleGrid>
   );
