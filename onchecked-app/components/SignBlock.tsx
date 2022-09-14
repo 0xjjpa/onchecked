@@ -13,8 +13,12 @@ import {
 
 export const SignBlock = ({
   setSignature,
+  setBlockhash,
+  setBlocknumber,
 }: {
   setSignature: (signature: string) => void;
+  setBlockhash: (blockhash: string) => void;
+  setBlocknumber: (blocknumber: number) => void;
 }) => {
   const { isConnected } = useAccount();
   const provider = useProvider();
@@ -43,6 +47,8 @@ export const SignBlock = ({
       types: ONCHECKED_SIGN_TYPES,
       value: payload,
     });
+    setBlockhash(blockhash);
+    setBlocknumber(blocknumber || 0);
     setSignature(signature);
   };
 
