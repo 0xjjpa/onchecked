@@ -6,7 +6,7 @@ import {
   TagLabel,
   TagRightIcon,
 } from "@chakra-ui/react";
-import { CheckIcon, InfoOutlineIcon } from "@chakra-ui/icons";
+import { CheckIcon, InfoOutlineIcon, NotAllowedIcon } from "@chakra-ui/icons";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -18,29 +18,42 @@ import QRCode from "qrcode-svg";
 
 import { SignBlock } from "../components/SignBlock";
 import styles from "../styles/Home.module.css";
+import { TagBlock } from "../components/TagBlock";
+import { utils } from "ethers";
+import { verifySignature } from "../lib/sign";
 
 const Show: NextPage = () => {
   const { isConnected } = useAccount();
   const router = useRouter();
   const {
     signature: maybeSignature,
+    address: maybeAddress,
     blockhash: maybeBlockhash,
     blocknumber: maybeBlocknumber,
   } = router?.query;
-  const [cosignature, setCosignature] = useState("0x0");
+
+  const [signedBlocknumber, setSignedBlocknumber] = useState(0);
+  const [signedBlockhash, setSignedBlockhash] = useState("");
+  const [signedAddress, setSignedAddress] = useState("");
+  const [signedSignature, setSignedSignature] = useState("");
+  const [hasBlockhash, setHasBlockhash] = useState(false);
+  const [hasBlocknumber, setHasBlocknumber] = useState(false);
+  const [hasAddress, setHasAddress] = useState(false);
+  const [hasSignedSignature, setHasSignedSignature] = useState(false);
 
   const [signature, setSignature] = useState("0x0");
   const [blockhash, setBlockhash] = useState("");
   const [blocknumber, setBlocknumber] = useState(0);
+  const [address, setAddress] = useState("0x0");
+
   const [hasSignature, setHasSignature] = useState(false);
-  const [hasBlockhash, setHasBlockhash] = useState(false);
-  const [hasBlocknumber, setHasBlocknumber] = useState(false);
+
+  const [cosignature, setCosignature] = useState("0x0");
 
   const [qrPayload, setQRpayload] = useState("0x0");
   const [host, setHost] = useState("");
   const [isDisplayingQR, setDisplayingQR] = useState(false);
 
-  const hasMaybeSignature = maybeSignature && maybeSignature.length > 3;
   const COLUMNS_NUMBER_WHEN_QR_DISPLAYED = 1;
   const COLUMNS_NUMBER_WHEN_NO_QR_DISPLAYED = 2;
 
@@ -48,13 +61,51 @@ const Show: NextPage = () => {
     if (window) {
       const host = window.location.href;
       setHost(host);
-      console.log("Host", host);
     }
   }, []);
 
   useEffect(() => {
-    maybeBlockhash && setHasBlockhash(maybeBlockhash.length > 0);
+    if (maybeBlockhash && utils.isHexString(maybeBlockhash, 32)) {
+      const blockhash = maybeBlockhash.toString();
+      setSignedBlockhash(blockhash);
+      setHasBlockhash(maybeBlockhash.length > 0);
+    } else if (maybeBlockhash) {
+      setHasBlockhash(maybeBlockhash.length > 0);
+    }
   }, [maybeBlockhash]);
+
+  useEffect(() => {
+    if (maybeAddress && utils.isAddress(maybeAddress.toString())) {
+      const address = maybeAddress.toString();
+      setHasAddress(maybeAddress.length > 0);
+      setSignedAddress(address);
+    } else if (maybeAddress) {
+      setHasAddress(maybeAddress.length > 0);
+    }
+  }, [maybeAddress]);
+
+  useEffect(() => {
+    if (
+      maybeSignature &&
+      maybeAddress &&
+      verifySignature({
+        signature: maybeSignature.toString(),
+        message: {
+          blockhash: maybeBlockhash?.toString(),
+          blocknumber: maybeBlocknumber?.toString(),
+        },
+        address: maybeAddress?.toString(),
+      })
+    ) {
+      const signature = maybeSignature.toString();
+      const address = maybeAddress.toString();
+      setHasSignedSignature(maybeSignature.length > 0);
+      setSignedSignature(signature);
+      setSignedAddress(address);
+    } else if (maybeSignature) {
+      setHasSignedSignature(maybeSignature.length > 0);
+    }
+  }, [maybeSignature, maybeAddress, maybeBlockhash, maybeBlocknumber]);
 
   useEffect(() => {
     signature && setHasSignature(signature.length > 3);
@@ -62,13 +113,11 @@ const Show: NextPage = () => {
 
   useEffect(() => {
     maybeBlocknumber && setHasBlocknumber(maybeBlocknumber != "0");
+    if (maybeBlocknumber) {
+      const blocknumber = +maybeBlocknumber.toString();
+      setSignedBlocknumber(blocknumber);
+    }
   }, [maybeBlocknumber]);
-
-  useEffect(() => {
-    console.log("Maybe Signature", maybeSignature);
-    console.log("Maybe Blockhash", maybeBlockhash);
-    console.log("Maybe Blocknumber", maybeBlocknumber);
-  }, [maybeSignature, maybeBlockhash, maybeBlocknumber]);
 
   useEffect(() => {
     const payload =
@@ -78,10 +127,11 @@ const Show: NextPage = () => {
       "&blockhash=" +
       blockhash +
       "&blocknumber=" +
-      blocknumber;
+      blocknumber +
+      "&address=" +
+      address;
     setQRpayload(payload);
-    console.log("Payload", payload);
-  }, [host, signature, blockhash, blocknumber]);
+  }, [host, signature, blockhash, blocknumber, address]);
 
   return (
     <div className={styles.container}>
@@ -97,7 +147,7 @@ const Show: NextPage = () => {
       <main className={styles.main}>
         <ConnectButton />
 
-        {hasMaybeSignature ? (
+        {hasSignedSignature ? (
           <h1 className={styles.title}>Co-sign payload</h1>
         ) : (
           <h1
@@ -114,7 +164,7 @@ const Show: NextPage = () => {
               maxWidth: "50vh",
               width: "50%",
               position: "absolute",
-              top: "25%",
+              top: "30%",
             }}
             onClick={() => {}}
             dangerouslySetInnerHTML={{
@@ -133,7 +183,7 @@ const Show: NextPage = () => {
         ) : (
           <Image
             src={
-              hasMaybeSignature
+              hasSignedSignature
                 ? "/images/onchecked-show-qr-cosign.png"
                 : hasSignature
                 ? "/images/onchecked-show-qr.png"
@@ -146,7 +196,7 @@ const Show: NextPage = () => {
         )}
 
         <Box style={isDisplayingQR ? { visibility: "hidden" } : {}}>
-          {hasMaybeSignature ? (
+          {hasSignedSignature ? (
             <p className={styles.description}>
               <b>Co-sign</b> <br />
               We’ll prompt your signature to create on-chain evidence of
@@ -168,20 +218,66 @@ const Show: NextPage = () => {
         </Box>
 
         {!isDisplayingQR && (
-          <SimpleGrid mb={5} spacing={2} columns={2}>
+          <SimpleGrid mb={5} spacing={2} columns={1} justifyItems="center">
             <Tag
               variant="outline"
-              colorScheme={hasBlockhash ? "green" : "blue"}
+              colorScheme={
+                hasBlockhash && signedBlockhash
+                  ? "green"
+                  : hasBlockhash
+                  ? "red"
+                  : "blue"
+              }
             >
-              <TagLabel>Blockhash</TagLabel>
-              <TagRightIcon as={hasBlockhash ? CheckIcon : InfoOutlineIcon} />
+              <TagLabel>
+                Blockhash{" "}
+                {hasBlockhash && signedBlockhash
+                  ? "(Valid)"
+                  : hasBlockhash
+                  ? "(Invalid)"
+                  : "(Empty)"}
+              </TagLabel>
+              <TagRightIcon
+                as={
+                  hasBlockhash && signedBlockhash
+                    ? CheckIcon
+                    : hasBlockhash
+                    ? NotAllowedIcon
+                    : InfoOutlineIcon
+                }
+              />
             </Tag>
+            <TagBlock
+              hasBlocknumber={hasBlocknumber}
+              signedBlocknumber={signedBlocknumber}
+            />
             <Tag
               variant="outline"
-              colorScheme={hasBlocknumber ? "green" : "blue"}
+              colorScheme={
+                hasSignedSignature && signedSignature
+                  ? "green"
+                  : hasSignedSignature
+                  ? "red"
+                  : "blue"
+              }
             >
-              <TagLabel>Blocknumber</TagLabel>
-              <TagRightIcon as={hasBlocknumber ? CheckIcon : InfoOutlineIcon} />
+              <TagLabel>
+                Signature{" "}
+                {hasSignedSignature && signedSignature
+                  ? "(Valid)"
+                  : hasSignedSignature
+                  ? "(Invalid)"
+                  : "(Empty)"}
+              </TagLabel>
+              <TagRightIcon
+                as={
+                  hasSignedSignature && signedSignature
+                    ? CheckIcon
+                    : hasSignedSignature
+                    ? NotAllowedIcon
+                    : InfoOutlineIcon
+                }
+              />
             </Tag>
           </SimpleGrid>
         )}
@@ -211,6 +307,7 @@ const Show: NextPage = () => {
               setSignature={setSignature}
               setBlockhash={setBlockhash}
               setBlocknumber={setBlocknumber}
+              setAddress={setAddress}
             />
           </p>
         )}

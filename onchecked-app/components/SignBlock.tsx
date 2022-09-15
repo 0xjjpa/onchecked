@@ -15,12 +15,14 @@ export const SignBlock = ({
   setSignature,
   setBlockhash,
   setBlocknumber,
+  setAddress
 }: {
   setSignature: (signature: string) => void;
   setBlockhash: (blockhash: string) => void;
   setBlocknumber: (blocknumber: number) => void;
+  setAddress: (address: string) => void;
 }) => {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const provider = useProvider();
   const { data, isError, isLoading } = useBlockNumber({
     watch: true,
@@ -50,6 +52,7 @@ export const SignBlock = ({
     setBlockhash(blockhash);
     setBlocknumber(blocknumber || 0);
     setSignature(signature);
+    address && setAddress(address);
   };
 
   if (isLoading) return <Code>Fetching block number…</Code>;
