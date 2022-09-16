@@ -1,8 +1,10 @@
 import { Button, Code, Box, SimpleGrid } from "@chakra-ui/react";
+import { utils } from "ethers";
 import {
   useAccount,
   useBlockNumber,
   useProvider,
+  useSigner,
   useSignTypedData,
 } from "wagmi";
 import {
@@ -23,6 +25,7 @@ export const SignBlock = ({
   setAddress: (address: string) => void;
 }) => {
   const { isConnected, address } = useAccount();
+  const { data: signer } = useSigner();
   const provider = useProvider();
   const { data, isError, isLoading } = useBlockNumber({
     watch: true,
@@ -40,18 +43,24 @@ export const SignBlock = ({
 
   const signPayload = async (blocknumber: number | undefined) => {
     const blockhash = await getBlockhash(blocknumber || 0);
-    const payload: ONCHECKED_MESSAGE_TYPE = {
-      blockhash,
-      blocknumber: blocknumber || 0,
-    };
-    const signature = await signTypedDataAsync({
-      domain: ONCHECKED_SIGN_DOMAIN,
-      types: ONCHECKED_SIGN_TYPES,
-      value: payload,
-    });
+    const message = utils.solidityPack(["string"], [blockhash]);
+    const hashedMessage = utils.solidityKeccak256(["bytes"], [message]);
+    // @TODO: Verify signer is there.
+    const signature = await signer?.signMessage(utils.arrayify(hashedMessage));
+    // @TODO: Migrate to EIP-712
+    // const payload: ONCHECKED_MESSAGE_TYPE = {
+    //   blockhash,
+    // };
+    // const signature = await signTypedDataAsync({
+    //   domain: ONCHECKED_SIGN_DOMAIN,
+    //   types: ONCHECKED_SIGN_TYPES,
+    //   value: payload,
+    // });
+
+    console.log("Signature", signature);
     setBlockhash(blockhash);
     setBlocknumber(blocknumber || 0);
-    setSignature(signature);
+    signature && setSignature(signature);
     address && setAddress(address);
   };
 

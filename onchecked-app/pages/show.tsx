@@ -5,6 +5,7 @@ import {
   Tag,
   TagLabel,
   TagRightIcon,
+  useClipboard,
 } from "@chakra-ui/react";
 import { CheckIcon, InfoOutlineIcon, NotAllowedIcon } from "@chakra-ui/icons";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -57,6 +58,8 @@ const Show: NextPage = () => {
   const COLUMNS_NUMBER_WHEN_QR_DISPLAYED = 1;
   const COLUMNS_NUMBER_WHEN_NO_QR_DISPLAYED = 2;
 
+  const { hasCopied, onCopy } = useClipboard(qrPayload);
+
   useEffect(() => {
     if (window) {
       const host = window.location.href;
@@ -88,12 +91,12 @@ const Show: NextPage = () => {
     if (
       maybeSignature &&
       maybeAddress &&
+      maybeBlockhash &&
       verifySignature({
         signature: maybeSignature.toString(),
-        message: {
-          blockhash: maybeBlockhash?.toString(),
-          blocknumber: maybeBlocknumber?.toString(),
-        },
+        // @TODO: Migrate to EIP-712
+        // { blockhash: maybeBlockhash?.toString() }
+        message: maybeBlockhash.toString(),
         address: maybeAddress?.toString(),
       })
     ) {
@@ -293,9 +296,9 @@ const Show: NextPage = () => {
           >
             <Button
               style={isDisplayingQR ? { display: "none" } : {}}
-              onClick={() => setSignature("")}
+              onClick={onCopy}
             >
-              Back
+              {hasCopied ? "Copied" : "Copy"}
             </Button>
             <Button onClick={() => setDisplayingQR(!isDisplayingQR)}>
               {isDisplayingQR ? "Hide" : "Display"}
