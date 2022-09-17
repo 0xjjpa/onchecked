@@ -24,14 +24,21 @@ export const SubmitBlock = ({
     // @TODO: Ensure signer is around.
     if (!signer) return;
     const contract = PoE__factory.connect(POE_ADDRESS, signer);
-    const echo = await contract.echo();
-    console.log("ECHO", echo);
     console.log("⛓ Blockhash", blockhash);
     console.log("⛓ SignedBlockhash (1)", signature);
     console.log("⛓ Blocknumber", blocknumber);
     console.log("⛓ Address (signer)", signerAddress);
     console.log("⛓ Address (cosigner)", cosignerAddress);
     console.log("⛓ CosignedBlockhash", cosignature);
+    await contract.verifyCosignedBlockhash(
+      blockhash,
+      signature,
+      blocknumber,
+      signature,
+      cosignature,
+      signerAddress,
+      cosignerAddress
+    );
   };
   return <Button onClick={() => submitSignature()}>Submit</Button>;
 };

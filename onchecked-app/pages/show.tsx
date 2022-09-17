@@ -303,9 +303,9 @@ const Show: NextPage = () => {
 
         {isConnected && hasCosignature ? (
           <SubmitBlock
-            blockhash={blockhash}
-            blocknumber={blocknumber}
-            signature={signature}
+            blockhash={signedBlockhash}
+            blocknumber={signedBlocknumber}
+            signature={signedSignature}
             cosignature={cosignature}
             signerAddress={signedAddress}
             cosignerAddress={String(currentAddress)}
