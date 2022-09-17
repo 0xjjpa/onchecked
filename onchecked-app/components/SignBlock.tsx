@@ -7,18 +7,17 @@ import {
   useSigner,
   useSignTypedData,
 } from "wagmi";
-import {
-  ONCHECKED_MESSAGE_TYPE,
-  ONCHECKED_SIGN_DOMAIN,
-  ONCHECKED_SIGN_TYPES,
-} from "../constants/sign";
 
 export const SignBlock = ({
+  signedSignature,
+  signedAddress,
   setSignature,
   setBlockhash,
   setBlocknumber,
-  setAddress
+  setAddress,
 }: {
+  signedSignature?: string;
+  signedAddress?: string;
   setSignature: (signature: string) => void;
   setBlockhash: (blockhash: string) => void;
   setBlocknumber: (blocknumber: number) => void;
@@ -30,10 +29,7 @@ export const SignBlock = ({
   const { data, isError, isLoading } = useBlockNumber({
     watch: true,
   });
-  const {
-    isLoading: isLoadingSigning,
-    signTypedDataAsync,
-  } = useSignTypedData();
+  const { isLoading: isLoadingSigning } = useSignTypedData();
 
   const getBlockhash = async (blocknumber: number): Promise<string> => {
     const block = await provider.getBlock(blocknumber);
@@ -43,7 +39,9 @@ export const SignBlock = ({
 
   const signPayload = async (blocknumber: number | undefined) => {
     const blockhash = await getBlockhash(blocknumber || 0);
-    const message = utils.solidityPack(["string"], [blockhash]);
+    const message = signedSignature
+      ? utils.solidityPack(["string"], [signedSignature])
+      : utils.solidityPack(["string"], [blockhash]);
     const hashedMessage = utils.solidityKeccak256(["bytes"], [message]);
     // @TODO: Verify signer is there.
     const signature = await signer?.signMessage(utils.arrayify(hashedMessage));
@@ -57,7 +55,15 @@ export const SignBlock = ({
     //   value: payload,
     // });
 
-    console.log("Signature", signature);
+    if (signedSignature && signedAddress) {
+      console.log("⛓ Blockhash", blockhash);
+      console.log("⛓ SignedBlockhash (1)", signedSignature);
+      console.log("⛓ Blocknumber", blocknumber);
+      console.log("⛓ Address (current)", address);
+      console.log("⛓ Address (cosigner)", signedAddress);
+      console.log("⛓ CosignedBlockhash", signature);
+    }
+
     setBlockhash(blockhash);
     setBlocknumber(blocknumber || 0);
     signature && setSignature(signature);

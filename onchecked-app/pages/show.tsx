@@ -307,6 +307,8 @@ const Show: NextPage = () => {
         ) : (
           <p className={styles.block}>
             <SignBlock
+              signedAddress={signedAddress}
+              signedSignature={signedSignature}
               setSignature={setSignature}
               setBlockhash={setBlockhash}
               setBlocknumber={setBlocknumber}
