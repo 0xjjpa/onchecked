@@ -15,6 +15,7 @@ export const SignBlock = ({
   setBlockhash,
   setBlocknumber,
   setAddress,
+  setCosignature,
 }: {
   signedSignature?: string;
   signedAddress?: string;
@@ -22,6 +23,7 @@ export const SignBlock = ({
   setBlockhash: (blockhash: string) => void;
   setBlocknumber: (blocknumber: number) => void;
   setAddress: (address: string) => void;
+  setCosignature: (cosignature: string) => void;
 }) => {
   const { isConnected, address } = useAccount();
   const { data: signer } = useSigner();
@@ -55,19 +57,20 @@ export const SignBlock = ({
     //   value: payload,
     // });
 
-    if (signedSignature && signedAddress) {
+    if (signature && signedSignature && signedAddress) {
+      setCosignature(signature);
       console.log("⛓ Blockhash", blockhash);
       console.log("⛓ SignedBlockhash (1)", signedSignature);
       console.log("⛓ Blocknumber", blocknumber);
       console.log("⛓ Address (current)", address);
       console.log("⛓ Address (cosigner)", signedAddress);
       console.log("⛓ CosignedBlockhash", signature);
+    } else {
+      setBlockhash(blockhash);
+      setBlocknumber(blocknumber || 0);
+      signature && setSignature(signature);
+      address && setAddress(address);
     }
-
-    setBlockhash(blockhash);
-    setBlocknumber(blocknumber || 0);
-    signature && setSignature(signature);
-    address && setAddress(address);
   };
 
   if (isLoading) return <Code>Fetching block number…</Code>;

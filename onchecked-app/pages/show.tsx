@@ -22,9 +22,10 @@ import styles from "../styles/Home.module.css";
 import { TagBlock } from "../components/TagBlock";
 import { utils } from "ethers";
 import { verifySignature } from "../lib/sign";
+import { SubmitBlock } from "../components/SubmitBlock";
 
 const Show: NextPage = () => {
-  const { isConnected } = useAccount();
+  const { isConnected, address: currentAddress } = useAccount();
   const router = useRouter();
   const {
     signature: maybeSignature,
@@ -50,6 +51,7 @@ const Show: NextPage = () => {
   const [hasSignature, setHasSignature] = useState(false);
 
   const [cosignature, setCosignature] = useState("0x0");
+  const [hasCosignature, setHasCosignature] = useState(false);
 
   const [qrPayload, setQRpayload] = useState("0x0");
   const [host, setHost] = useState("");
@@ -66,6 +68,10 @@ const Show: NextPage = () => {
       setHost(host);
     }
   }, []);
+
+  useEffect(() => {
+    cosignature && setHasCosignature(cosignature.length > 3);
+  }, [cosignature]);
 
   useEffect(() => {
     if (maybeBlockhash && utils.isHexString(maybeBlockhash, 32)) {
@@ -150,7 +156,9 @@ const Show: NextPage = () => {
       <main className={styles.main}>
         <ConnectButton />
 
-        {hasSignedSignature ? (
+        {hasCosignature ? (
+          <h1 className={styles.title}>Submit co-signature</h1>
+        ) : hasSignedSignature ? (
           <h1 className={styles.title}>Co-sign payload</h1>
         ) : (
           <h1
@@ -186,7 +194,9 @@ const Show: NextPage = () => {
         ) : (
           <Image
             src={
-              hasSignedSignature
+              hasCosignature
+                ? "/images/onchecked-show-submit-signature.png"
+                : hasSignedSignature
                 ? "/images/onchecked-show-qr-cosign.png"
                 : hasSignature
                 ? "/images/onchecked-show-qr.png"
@@ -199,7 +209,13 @@ const Show: NextPage = () => {
         )}
 
         <Box style={isDisplayingQR ? { visibility: "hidden" } : {}}>
-          {hasSignedSignature ? (
+          {hasCosignature ? (
+            <p className={styles.description}>
+              <b>Submit</b> <br />
+              We’ll now send your co-signature to our smart contract to record
+              the interaction on-chain.
+            </p>
+          ) : hasSignedSignature ? (
             <p className={styles.description}>
               <b>Co-sign</b> <br />
               We’ll prompt your signature to create on-chain evidence of
@@ -285,7 +301,16 @@ const Show: NextPage = () => {
           </SimpleGrid>
         )}
 
-        {isConnected && hasSignature ? (
+        {isConnected && hasCosignature ? (
+          <SubmitBlock
+            blockhash={blockhash}
+            blocknumber={blocknumber}
+            signature={signature}
+            cosignature={cosignature}
+            signerAddress={signedAddress}
+            cosignerAddress={String(currentAddress)}
+          />
+        ) : hasSignature ? (
           <SimpleGrid
             columns={
               isDisplayingQR
@@ -309,6 +334,7 @@ const Show: NextPage = () => {
             <SignBlock
               signedAddress={signedAddress}
               signedSignature={signedSignature}
+              setCosignature={setCosignature}
               setSignature={setSignature}
               setBlockhash={setBlockhash}
               setBlocknumber={setBlocknumber}
