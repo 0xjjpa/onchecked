@@ -1,4 +1,6 @@
 import { Button } from "@chakra-ui/react";
+import { PoE__factory } from "../types";
+import { useSigner } from "wagmi";
 
 export const SubmitBlock = ({
   blockhash,
@@ -15,7 +17,15 @@ export const SubmitBlock = ({
   signerAddress: string;
   cosignerAddress: string;
 }) => {
-  const submitSignature = () => {
+  const { data: signer } = useSigner();
+  // @TODO: Make this an env rather than hardcoded
+  const POE_ADDRESS = '0x7C4FeBbF95db0f758380cF2FAB5Da864050A928F'
+  const submitSignature = async () => {
+    // @TODO: Ensure signer is around.
+    if (!signer) return;
+    const contract = PoE__factory.connect(POE_ADDRESS, signer);
+    const echo = await contract.echo();
+    console.log("ECHO", echo);
     console.log("⛓ Blockhash", blockhash);
     console.log("⛓ SignedBlockhash (1)", signature);
     console.log("⛓ Blocknumber", blocknumber);
