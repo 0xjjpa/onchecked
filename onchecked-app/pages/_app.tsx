@@ -6,25 +6,12 @@ import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { Chain, chain, configureChains, createClient, WagmiConfig } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
+import { SUPPORTED_CHAINS } from "../constants/sign";
 
-// @TODO: Setup environment to load this automatically.
-const customLocalhost: Chain = {
-  id: 31337,
-  name: 'Gitpod Localhost',
-  network: 'gitpod',
-  rpcUrls: { default: 'https://8545-0xjjpa-onchecked-c4ecpae0bj7.ws-eu64.gitpod.io/' }
-}
+
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [
-    chain.mainnet,
-    chain.polygon,
-    chain.optimism,
-    chain.arbitrum,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" || true
-      ? [chain.polygonMumbai, customLocalhost]
-      : []),
-  ],
+  SUPPORTED_CHAINS,
   [
     alchemyProvider({
       // This is Alchemy's default API key.
