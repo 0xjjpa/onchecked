@@ -45,11 +45,11 @@ const Home: NextPage = () => {
               </p>
             </a>
 
-            <a href="/scan" className={styles.card}>
-              <h2>Scan and cosign proof &rarr;</h2>
+            <a href="/dashboard" className={styles.card}>
+              <h2>Dashboard of proofs &rarr;</h2>
               <p>
-                Scan a signed payload and cosign it with your web3 wallet to
-                create an attestation.
+                Review existing proofs from individuals that have co-signed
+                a payload within 256 blocks.
               </p>
             </a>
           </div>

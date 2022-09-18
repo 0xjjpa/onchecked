@@ -12,7 +12,7 @@ contract PoE {
       string _blockhash;
       uint256 _blocknumber;
     }
-    event Witnessed(address indexed cosigner, string blockhash, uint256 blocknumber);
+    event Witnessed(address indexed signer, address indexed cosigner, string blockhash, uint256 blocknumber);
     event Attested(address indexed signer, address indexed cosigner, string blockhash, string signedblockhash, uint256 blocknumber, uint256 signedblocknumber);
     mapping(address => Proof) private signatures;
     function verifyBlockhash(string memory _blockhash, uint256 _blocknumber) public view returns (bool) {
@@ -76,7 +76,7 @@ contract PoE {
           } else { // Does not exist in storage
             console.log("[vcbh] Proof for cosigner does not exist, storing...");
             _addSignature(_cosigner, _blockhash, _blocknumber);
-            emit Witnessed(_cosigner, _blockhash, _blocknumber);
+            emit Witnessed(_signer, _cosigner, _blockhash, _blocknumber);
             return true;
           }
         } else {

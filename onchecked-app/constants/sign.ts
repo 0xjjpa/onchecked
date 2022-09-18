@@ -32,3 +32,14 @@ export const SUPPORTED_CHAINS = [
     ? [chain.polygonMumbai, customLocalhost]
     : []),
 ]
+
+// @TODO: Make this an env rather than hardcoded
+export const POE_CONTRACTS = {
+  [chain.polygonMumbai.id]: "0x72Ea42755bE336416bAE4E88cb8E6242bF2EB3bf",
+  [customLocalhost.id]: "0x7C4FeBbF95db0f758380cF2FAB5Da864050A928F",
+};
+
+export const POE_CONTRACTS_BLOCK = {
+  [chain.polygonMumbai.id]: 28163190,
+  [customLocalhost.id]: 1
+}

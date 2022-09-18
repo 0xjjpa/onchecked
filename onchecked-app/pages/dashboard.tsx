@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useAccount } from "wagmi";
+import { ProofsTable } from "../components/ProofsTable";
 import styles from "../styles/Home.module.css";
 
 const Scan: NextPage = () => {
@@ -21,7 +22,7 @@ const Scan: NextPage = () => {
       <main className={styles.main}>
         <ConnectButton />
 
-        <h1 className={styles.title}>Onchecked</h1>
+        <h1 className={styles.title}>Dashboard</h1>
 
         <Image
           src="/images/onchecked-scan.png"
@@ -31,29 +32,10 @@ const Scan: NextPage = () => {
         />
 
         <p className={styles.description}>
-          Generate a proof-of-presence between you and other web3 frend by
-          cosigning blocks in a given timeframe.
+          See all proof-of-presence successful proofs.
         </p>
 
-        {isConnected && (
-          <div className={styles.grid}>
-            <a href="/show" className={styles.card}>
-              <h2>Sign and show proof &rarr;</h2>
-              <p>
-                Use your web3 wallet to sign a given blockhash to place yourself
-                in a given time.
-              </p>
-            </a>
-
-            <a href="/scan" className={styles.card}>
-              <h2>Scan and cosign proof &rarr;</h2>
-              <p>
-                Scan a signed payload and cosign it with your web3 wallet to
-                create an attestation.
-              </p>
-            </a>
-          </div>
-        )}
+        <ProofsTable />
       </main>
 
       <footer className={styles.footer}>

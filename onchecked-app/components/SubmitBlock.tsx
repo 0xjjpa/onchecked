@@ -1,10 +1,9 @@
 import { Button } from "@chakra-ui/react";
 import { PoE__factory } from "../types";
-import { Chain, chain, useNetwork, useSigner } from "wagmi";
-import { customLocalhost } from "../constants/sign";
+import { useNetwork, useSigner } from "wagmi";
 import { useState } from "react";
-import { ethers } from "ethers";
 import { CheckCircleIcon } from "@chakra-ui/icons";
+import { getPoEAddress } from "../lib/sign";
 
 export const SubmitBlock = ({
   blockhash,
@@ -26,14 +25,6 @@ export const SubmitBlock = ({
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
 
-  // @TODO: Make this an env rather than hardcoded
-  const getPoEAddress = (_chain: Chain): string | undefined => {
-    const POE_CONTRACTS = {
-      [chain.polygonMumbai.id]: "0xc48451a1c88BbBdc37E0E32Ab885e5bBBFc78802",
-      [customLocalhost.id]: "0x7C4FeBbF95db0f758380cF2FAB5Da864050A928F",
-    };
-    return POE_CONTRACTS[_chain.id];
-  };
   const submitSignature = async () => {
     // @TODO: Ensure signer is around.
     if (!signer) return;
