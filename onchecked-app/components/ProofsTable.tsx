@@ -8,21 +8,31 @@ import {
   Td,
   Tfoot,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNetwork } from "wagmi";
+import { truncate } from "../lib/helpers";
 import { getPoEAddress, getPoEDeployedBlock } from "../lib/sign";
+import { ProofsDataResponse, Proof } from "../pages/api/proofs";
 
 export const ProofsTable = () => {
   const { chain: currentChain } = useNetwork();
+  const [proofs, setProofs] = useState<Proof[]>([]);
 
   useEffect(() => {
-    const loadProofs = async() => {
+    const loadProofs = async () => {
       if (currentChain) {
         const poeContractAddress = getPoEAddress(currentChain);
         const poeDeployedBlock = getPoEDeployedBlock(currentChain);
-        const proofs = await fetch(`/api/proofs?contractAddress=${poeContractAddress}&initialBlock=${poeDeployedBlock}`);
+        const proofs: ProofsDataResponse = await (
+          await fetch(
+            `/api/proofs?contractAddress=${poeContractAddress}&initialBlock=${poeDeployedBlock}`
+          )
+        ).json();
+        if (proofs.responses) {
+          setProofs(proofs.responses);
+        }
       }
-    }
+    };
     loadProofs();
   }, [currentChain]);
 
@@ -33,21 +43,23 @@ export const ProofsTable = () => {
           <Tr>
             <Th>Signer</Th>
             <Th>Cosigner</Th>
-            <Th>Transaction</Th>
+            <Th>Tx Hash</Th>
           </Tr>
         </Thead>
         <Tbody>
-          <Tr>
-            <Td>0x123456...789</Td>
-            <Td>0x234567...980</Td>
-            <Td>0x111111...111</Td>
-          </Tr>
+          {proofs.map((proof) => (
+            <Tr key={proof.transaction}>
+              <Td>{truncate(proof.signer, 40)}</Td>
+              <Td>{truncate(proof.cosigner, 40)}</Td>
+              <Td>{truncate(proof.transaction, 62)}</Td>
+            </Tr>
+          ))}
         </Tbody>
         <Tfoot>
           <Tr>
             <Th>Signer</Th>
             <Th>Cosigner</Th>
-            <Th>Transaction</Th>
+            <Th>Tx Hahs</Th>
           </Tr>
         </Tfoot>
       </Table>
