@@ -1,8 +1,10 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import type { NextPage } from "next";
+
 import Head from "next/head";
 import Image from "next/image";
 import { useAccount } from "wagmi";
+import { Link } from "../components/Link";
 import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
@@ -37,33 +39,33 @@ const Home: NextPage = () => {
 
         {isConnected && (
           <div className={styles.grid}>
-            <a href="/show" className={styles.card}>
+            <Link href="/show" className={styles.card}>
               <h2>Sign and show proof &rarr;</h2>
               <p>
                 Use your web3 wallet to sign a given blockhash to place yourself
                 in a given time.
               </p>
-            </a>
+            </Link>
 
-            <a href="/dashboard" className={styles.card}>
+            <Link href="/dashboard" className={styles.card}>
               <h2>Dashboard of proofs &rarr;</h2>
               <p>
                 Review existing proofs from individuals that have co-signed
                 a payload within 256 blocks.
               </p>
-            </a>
+            </Link>
           </div>
         )}
       </main>
 
       <footer className={styles.footer}>
-        <a
+        <Link
           href="https://twitter.com/0xjjpa"
           target="_blank"
           rel="noopener noreferrer"
         >
           Made with ❤️ by 0xjjpa
-        </a>
+        </Link>
       </footer>
     </div>
   );

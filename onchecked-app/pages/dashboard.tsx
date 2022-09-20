@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useAccount } from "wagmi";
+import { Link } from "../components/Link";
 import { ProofsTable } from "../components/ProofsTable";
 import styles from "../styles/Home.module.css";
 
@@ -39,13 +40,13 @@ const Scan: NextPage = () => {
       </main>
 
       <footer className={styles.footer}>
-        <a
+        <Link
           href="https://twitter.com/0xjjpa"
           target="_blank"
           rel="noopener noreferrer"
         >
           Made with ❤️ by 0xjjpa
-        </a>
+        </Link>
       </footer>
     </div>
   );

@@ -23,6 +23,7 @@ import { TagBlock } from "../components/TagBlock";
 import { utils } from "ethers";
 import { verifySignature } from "../lib/sign";
 import { SubmitBlock } from "../components/SubmitBlock";
+import { Link } from "../components/Link";
 
 const Show: NextPage = () => {
   const { isConnected, address: currentAddress } = useAccount();
@@ -345,13 +346,13 @@ const Show: NextPage = () => {
       </main>
 
       <footer className={styles.footer}>
-        <a
+        <Link
           href="https://twitter.com/0xjjpa"
           target="_blank"
           rel="noopener noreferrer"
         >
           Made with ❤️ by 0xjjpa
-        </a>
+        </Link>
       </footer>
     </div>
   );
