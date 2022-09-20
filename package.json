@@ -1,0 +1,22 @@
+{
+  "name": "onchecked",
+  "version": "1.0.0",
+  "description": "Verifying real-time engagement by using block hashes as proof-of-presence",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xjjpa/onchecked.git"
+  },
+  "private": true,
+  "workspaces": ["onchecked-app", "onchecked-contracts"],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/0xjjpa/onchecked/issues"
+  },
+  "homepage": "https://github.com/0xjjpa/onchecked#readme"
+}

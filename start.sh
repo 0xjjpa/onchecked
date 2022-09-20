@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cd onchecked-app && npm run start
+yarn workspace onchecked-app start

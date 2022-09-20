@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cd onchecked-contracts && yarn typechain && cd ..
-cd onchecked-app && npm run build && npm run export
+yarn workspace onchecked-contracts compile
+yarn workspace onchecked-contracts typechain
+yarn workspace onchecked-app build
