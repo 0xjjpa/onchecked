@@ -18,9 +18,10 @@ const mnemonic: string | undefined = process.env.MNEMONIC;
 // }
 
 const infuraApiKey: string | undefined = process.env.INFURA_API_KEY;
-if (!infuraApiKey) {
-  throw new Error("Please set your INFURA_API_KEY in a .env file");
-}
+// @TODO: No need for this unless we deploying.....
+// if (!infuraApiKey) {
+//   throw new Error("Please set your INFURA_API_KEY in a .env file");
+// }
 
 const chainIds = {
   "arbitrum-mainnet": 42161,
