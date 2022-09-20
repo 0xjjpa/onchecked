@@ -11,11 +11,7 @@ const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
 
 // Ensure that we have all the environment variables we need.
-const mnemonic: string | undefined = process.env.MNEMONIC;
-// @TODO Restore this, but only when deploying...
-// if (!mnemonic) {
-//   throw new Error("Please set your MNEMONIC in a .env file");
-// }
+const mnemonic: string = process.env.MNEMONIC || "test test test test test test test test test test test junk";
 
 const infuraApiKey: string | undefined = process.env.INFURA_API_KEY;
 // @TODO: No need for this unless we deploying.....
