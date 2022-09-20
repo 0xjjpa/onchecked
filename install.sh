@@ -1,3 +1,3 @@
 #!/bin/bash
 
-yarn install
+yarn install && cd onchecked-contracts && yarn install
