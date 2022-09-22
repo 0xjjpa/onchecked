@@ -23,6 +23,8 @@ export const customLocalhost: Chain = {
   rpcUrls: { default: 'https://8545-0xjjpa-onchecked-c4ecpae0bj7.ws-eu64.gitpod.io/' }
 }
 
+export const DEFAULT_CHAIN: Chain = chain.polygonMumbai;
+
 export const SUPPORTED_CHAINS = [
   chain.mainnet,
   chain.polygon,
