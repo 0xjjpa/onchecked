@@ -23,11 +23,19 @@ export const customLocalhost: Chain = {
   rpcUrls: { default: 'https://8545-0xjjpa-onchecked-c4ecpae0bj7.ws-eu64.gitpod.io/' }
 }
 
+export const aurora: Chain = {
+  id: 1313161554,
+  name: 'Aurora',
+  network: 'aurora',
+  rpcUrls: { default: 'https://mainnet.aurora.dev' }
+}
+
 export const DEFAULT_CHAIN: Chain = chain.polygonMumbai;
 
 export const SUPPORTED_CHAINS = [
   chain.polygon,
   chain.optimism,
+  aurora,
   ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" || true
     ? [chain.polygonMumbai]
     : []),
@@ -38,6 +46,7 @@ export const POE_CONTRACTS = {
   [chain.polygonMumbai.id]: "0x72Ea42755bE336416bAE4E88cb8E6242bF2EB3bf",
   [chain.polygon.id]: "0x8D01EBd66718e33B070519792a60BC9c4d1C1BA0",
   [chain.optimism.id]: "0x4DEB39F5dd9Ec0d8C680233C80ca1647Adb9c59E",
+  [aurora.id]: "0xeade8f12a1f238a1ed603fe06499631fd2e08ab3",
   [customLocalhost.id]: "0x7C4FeBbF95db0f758380cF2FAB5Da864050A928F",
 };
 
@@ -45,5 +54,6 @@ export const POE_CONTRACTS_BLOCK = {
   [chain.polygonMumbai.id]: 28163190,
   [chain.optimism.id]: 24738721,
   [chain.polygon.id]: 33453276,
+  [aurora.id]: 74714517,
   [customLocalhost.id]: 1
 }
