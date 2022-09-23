@@ -1,9 +1,10 @@
-import { Button } from "@chakra-ui/react";
-import { PoE__factory } from "../types";
-import { useNetwork, useSigner } from "wagmi";
-import { useState } from "react";
-import { CheckCircleIcon } from "@chakra-ui/icons";
 import { getPoEAddress } from "../lib/sign";
+import { PoE__factory } from "../types";
+import { CheckCircleIcon } from "@chakra-ui/icons";
+import { Button } from "@chakra-ui/react";
+import { useState } from "react";
+import { useNetwork, useSigner } from "wagmi";
+import { Link } from "./Link";
 
 export const SubmitBlock = ({
   blockhash,
@@ -35,9 +36,11 @@ export const SubmitBlock = ({
     if (!poeContractAddress) return;
 
     setIsLoadingSubmit(true);
-    setTimeout(() => {
-      setIsLoadingSubmit(false);
-    }, 30000);
+
+    // @TODO: Restore timeout w/a failed message.
+    // setTimeout(() => {
+    //   setIsLoadingSubmit(false);
+    // }, 30000);
 
     const contract = PoE__factory.connect(poeContractAddress, signer);
 
@@ -61,22 +64,27 @@ export const SubmitBlock = ({
     await signer?.provider?.waitForTransaction(tx.hash);
 
     // Expect that we have emited the ”Witnessed” event
-    const filter = contract.filters.Witnessed();
-    const events = await contract.queryFilter(filter);
-    const [event] = events;
-    const { blockHash: bh } = event;
+    // @TODO: Ensure event is found upon submission
+    // const filter = contract.filters.Witnessed();
+    // const events = await contract.queryFilter(filter, +(blocknumber) - 32, 'latest');
+    // const [event] = events;
+    // const { blockHash: bh } = event;
 
     setIsLoadingSubmit(false);
-    setIsSuccessful(bh === blockhash);
+    // @TODO: Ensure event is found upon submission
+    //setIsSuccessful(bh === blockhash);
+    setIsSuccessful(true);
   };
   return isSuccessful ? (
-    <Button
-      rightIcon={<CheckCircleIcon />}
-      colorScheme="green"
-      variant="outline"
-    >
-      Success (Go to Dashboard)
-    </Button>
+    <Link href="/dashboard">
+      <Button
+        rightIcon={<CheckCircleIcon />}
+        colorScheme="green"
+        variant="outline"
+      >
+        Success (Go to Dashboard)
+      </Button>
+    </Link>
   ) : (
     <Button isLoading={isLoadingSubmit} onClick={() => submitSignature()}>
       Submit
