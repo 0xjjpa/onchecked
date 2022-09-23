@@ -27,15 +27,20 @@ export const aurora: Chain = {
   id: 1313161554,
   name: 'Aurora',
   network: 'aurora',
-  rpcUrls: { default: 'https://mainnet.aurora.dev' }
+  nativeCurrency: {
+    name: 'Aurora',
+    symbol: 'AURORA',
+    decimals: 18
+  },
+  rpcUrls: { default: 'https://mainnet.aurora.dev' },
 }
 
-export const DEFAULT_CHAIN: Chain = chain.polygonMumbai;
+export const DEFAULT_CHAIN: Chain = chain.polygon;
 
 export const SUPPORTED_CHAINS = [
   chain.polygon,
   chain.optimism,
-  aurora,
+  { iconUrl: '/icons/aurora-icon.svg', ...aurora  },
   ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" || true
     ? [chain.polygonMumbai]
     : []),
