@@ -4,6 +4,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 import { Link } from "../components/Link";
+import { NavMenu } from "../components/NavMenu";
 import { ProofsTable } from "../components/ProofsTable";
 import styles from "../styles/Home.module.css";
 
@@ -22,6 +23,7 @@ const Scan: NextPage = () => {
 
       <main className={styles.main}>
         <ConnectButton />
+        <NavMenu />
 
         <h1 className={styles.title}>Dashboard</h1>
 

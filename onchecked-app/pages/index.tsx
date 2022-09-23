@@ -39,7 +39,7 @@ const Home: NextPage = () => {
 
         {isConnected && (
           <div className={styles.grid}>
-            <Link href="/show" className={styles.card}>
+            <Link href="/sign" className={styles.card}>
               <h2>Sign and show proof &rarr;</h2>
               <p>
                 Use your web3 wallet to sign a given blockhash to place yourself
