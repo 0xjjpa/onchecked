@@ -36,7 +36,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   // @TODO: Type Covalent responses
   const responses = items.map((item: any) => {
-    console.log("Item", item)
     // @TODO: This only works cause we got two events only, will break with more.
     try {
       const decodedEvents = contract.interface.decodeEventLog("Witnessed", item.raw_log_data, item.raw_log_topics);
