@@ -23,13 +23,14 @@ const { COVALENT_API_KEY } = process.env
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ProofsDataResponse | string>) {
   const {
     method,
-    query: { contractAddress, initialBlock }
+    query: { contractAddress, initialBlock, chainId }
   } = req
   if (method != 'GET') return res.status(405).json({ err: 'Only GET method allowed' })
   if (!COVALENT_API_KEY) return res.status(501).json({ err: 'No Covalent API key loaded' })
   if (!contractAddress) return res.status(501).json({ err: 'No contract address provided' })
+  if (!chainId) return res.status(501).json({ err: 'No chainId provided' })
   //@TODO Fail if no contract nor initial block.
-  const { data } = await (await fetch(`https://api.covalenthq.com/v1/80001/events/address/${contractAddress}/?quote-currency=USD&format=JSON&starting-block=${initialBlock}&ending-block=latest&key=${COVALENT_API_KEY}`)).json()
+  const { data } = await (await fetch(`https://api.covalenthq.com/v1/${chainId}/events/address/${contractAddress}/?quote-currency=USD&format=JSON&starting-block=${initialBlock}&ending-block=latest&key=${COVALENT_API_KEY}`)).json()
   const { items } = data;
 
   const contract = new Contract(contractAddress.toString(), PoE__factory.abi) as PoE;

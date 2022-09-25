@@ -29,7 +29,7 @@ export const ProofsTable = () => {
         const poeDeployedBlock = getPoEDeployedBlock(currentChain);
         const proofs: ProofsDataResponse = await (
           await fetch(
-            `/api/proofs?contractAddress=${poeContractAddress}&initialBlock=${poeDeployedBlock}`
+            `/api/proofs?contractAddress=${poeContractAddress}&initialBlock=${poeDeployedBlock}&chainId=${currentChain.id}`
           )
         ).json();
         if (proofs.responses) {
