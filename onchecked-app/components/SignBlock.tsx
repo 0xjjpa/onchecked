@@ -66,6 +66,10 @@ export const SignBlock = ({
       console.log("⛓ Address (cosigner)", signedAddress);
       console.log("⛓ CosignedBlockhash", signature);
     } else {
+      console.log("⛓ Blockhash", blockhash);
+      console.log("⛓ Blocknumber", blocknumber);
+      console.log("⛓ Address", address);
+      console.log("⛓ SignedBlockhash", signature);
       setBlockhash(blockhash);
       setBlocknumber(blocknumber || 0);
       signature && setSignature(signature);

@@ -5,6 +5,7 @@ import {
   Tag,
   TagLabel,
   TagRightIcon,
+  Text,
   useClipboard,
 } from "@chakra-ui/react";
 import { CheckIcon, InfoOutlineIcon, NotAllowedIcon } from "@chakra-ui/icons";
@@ -241,6 +242,7 @@ const Show: NextPage = () => {
 
         {!isDisplayingQR && (
           <SimpleGrid mb={5} spacing={2} columns={1} justifyItems="center">
+            <Text fontFamily="mono">Signature Information</Text>
             <Tag
               variant="outline"
               colorScheme={
@@ -333,7 +335,7 @@ const Show: NextPage = () => {
             </Button>
           </SimpleGrid>
         ) : (
-          <p className={styles.block}>
+          <Box className={styles.block}>
             <SignBlock
               signedAddress={signedAddress}
               signedSignature={signedSignature}
@@ -343,7 +345,7 @@ const Show: NextPage = () => {
               setBlocknumber={setBlocknumber}
               setAddress={setAddress}
             />
-          </p>
+          </Box>
         )}
       </main>
 

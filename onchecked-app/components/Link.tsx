@@ -6,7 +6,10 @@ type Props = {
   children?: React.ReactNode;
 };
 
-export const Link: React.FC<Props & LinkProps & ChakraLinkProps> = (props) => {
+type CustomLinkProps = Props & LinkProps & ChakraLinkProps
+
+//@TODO: Fix forwardRef issue caused by NextLink not being a Chakra component
+export const Link: React.FC<CustomLinkProps> = (props) => {
   const { children, href, as, ...rest } = props;
   return <NextLink as={as} passHref href={href}>
     <ChakraLink {...rest}>{children}</ChakraLink>

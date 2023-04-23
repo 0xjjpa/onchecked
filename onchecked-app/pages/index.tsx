@@ -8,7 +8,7 @@ import { Link } from "../components/Link";
 import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   return (
     <div className={styles.container}>
       <Head>

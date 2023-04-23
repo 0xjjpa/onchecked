@@ -62,7 +62,7 @@ export const DEFAULT_CHAIN: Chain = chain.polygon;
 export const SUPPORTED_CHAINS = [
   chain.polygon,
   chain.optimism,
-  baseGoerli,
+  { iconUrl: '/icons/base-icon.svg', ...baseGoerli },
   { iconUrl: '/icons/aurora-icon.svg', ...aurora  },
   ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" || true
     ? [chain.polygonMumbai]

@@ -51,7 +51,7 @@ export const ProofsTable = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {proofs.map((proof) => {
+          {proofs.length > 0 ? proofs.map((proof) => {
             const isCurrentSelectedProof =
               selectedProof && selectedProof.transaction == proof.transaction;
             return (
@@ -91,7 +91,8 @@ export const ProofsTable = () => {
                 )}
               </Fragment>
             );
-          })}
+          }) : <Tr><Td fontFamily="mono" py="5" textAlign="center" colSpan={3}>No proofs found</Td></Tr>
+        }
         </Tbody>
         <Tfoot>
           <Tr>
