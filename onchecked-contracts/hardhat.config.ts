@@ -21,6 +21,7 @@ const infuraApiKey: string | undefined = process.env.INFURA_API_KEY;
 
 const chainIds = {
   "arbitrum-mainnet": 42161,
+  "base-goerli": 84531,
   avalanche: 43114,
   bsc: 56,
   goerli: 5,
@@ -34,6 +35,9 @@ const chainIds = {
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
   let jsonRpcUrl: string;
   switch (chain) {
+    case "base-goerli":
+      jsonRpcUrl = "https://goerli.base.org";
+      break;
     case "avalanche":
       jsonRpcUrl = "https://api.avax.network/ext/bc/C/rpc";
       break;
@@ -66,7 +70,18 @@ const config: HardhatUserConfig = {
       optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
       polygon: process.env.POLYGONSCAN_API_KEY || "",
       polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
+      "base-goerli": "PLACEHOLDER_STRING"
     },
+    customChains: [
+     {
+       network: "base-goerli",
+       chainId: 84531,
+       urls: {
+        apiURL: "https://api-goerli.basescan.org/api",
+        browserURL: "https://goerli.basescan.org"
+       }
+     }
+   ]
   },
   gasReporter: {
     currency: "USD",
@@ -89,6 +104,7 @@ const config: HardhatUserConfig = {
     optimism: getChainConfig("optimism-mainnet"),
     "polygon-mainnet": getChainConfig("polygon-mainnet"),
     "polygon-mumbai": getChainConfig("polygon-mumbai"),
+    "base-goerli": getChainConfig("base-goerli")
   },
   paths: {
     artifacts: "./artifacts",
